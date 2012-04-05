@@ -23,35 +23,31 @@ require 'json'
 
 module JSONH
 
-  def pack ah 
+  class << self
 
-    len, keys         = ah.size, ( ah.size and ah.first.keys ) 
-
-    [
-      keys.size,
-      *keys,
-      *( ah.map { |i| i.values }.flatten( 1 ) )
-    ]
-
-  end
-
-  def unpack hlist
-    result = [ ] 
-
-    hlist[ hlist.first, ].each_slice( hlist.first ) do |s|
-      result << Hash[ hlist[0,hlist.first].zip( s ) ]
+    def pack( ah ) 
+      [ ah.first.keys.size, *ah.first.keys, *ah.map( &:values ).flatten( 1 ) ]
     end
 
-    result
-  end
+    def unpack hlist
+      result = [ ] 
 
-  def dump obj
-    pack( obj ).to_json
-  end
+      hlist[ hlist.first + 1, hlist.size ].each_slice( hlist.first ) do |s|
+        result << Hash[ hlist[ 1, hlist.first ].zip( s ) ]
+      end
+
+      result
+    end
+
+    def dump obj
+      pack( obj ).to_json
+    end
 
 
-  def load obj
-    unpack( JSON.load( obj ) )
+    def load obj
+      unpack( JSON.load( obj ) )
+    end
+
   end
 
 end
